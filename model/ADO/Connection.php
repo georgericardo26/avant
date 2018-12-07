@@ -10,13 +10,6 @@ final class Connection {
 
         // ler os parametros do arquivo
         $params = array();
-     /*   $params['host'] = "localhost";
-        $params['port'] = "5433";
-        $params['dbname'] = "avant";
-        $params['user'] = "postgres";
-        $params['pass'] = "30032011";
-     */
-
         $params['host'] = "avantdb.clnmev30d5j8.us-east-1.rds.amazonaws.com";
         $params['port'] = "5432";
         $params['dbname'] = "avant";

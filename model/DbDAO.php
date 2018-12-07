@@ -115,13 +115,7 @@ class ClientesDAO extends DAO {
 
             //atribui o valor de cada coluna
 
-            //fazer um foreach aqui
-           // foreach ($data as $key => $value){
-
             $sql -> setRowData($data);
-              //  $sql -> setRowData($key, $value);
-
-          //  }
 
             //executa a instrucao SQL
             $sql -> execute(Transaction::get());
@@ -144,8 +138,6 @@ class ClientesDAO extends DAO {
                 ));
             }
         } catch (Exception $e) {
-            //registra o texto no log
-          //  Util::writeLogXML(__METHOD__ .": " .$e -> getMessage());
             echo $e -> getMessage();
             //desfaz todas as operacoes realizadas na transacao
             Transaction::rollback();
@@ -191,10 +183,7 @@ class ClientesDAO extends DAO {
                 return true;
             }
         } catch (Exception $e) {
-            //registra o texto no log
-           // Util::writeLogXML(__METHOD__ .": " .$e -> getMessage());
-            echo $e -> getMessage();
-            
+           // echo $e -> getMessage();
             //desfaz todas as operacoes realizadas na transacao
             Transaction::rollback();
             return false;
@@ -239,9 +228,7 @@ class ClientesDAO extends DAO {
                 return true;
             }
         } catch (Exception $e) {
-            //registra o texto no log
-            // Util::writeLogXML(__METHOD__ .": " .$e -> getMessage());
-            echo $e -> getMessage();
+           // echo $e -> getMessage();
 
             //desfaz todas as operacoes realizadas na transacao
             Transaction::rollback();
@@ -282,9 +269,8 @@ class ClientesDAO extends DAO {
             }
         } catch (Exception $e) {
 
-            echo $e -> getMessage();
-            //registra o texto no log
-           // Util::writeLogXML(__METHOD__ .": " .$e -> getMessage());
+           // echo $e -> getMessage();
+
             
             //desfaz todas as operacoes realizadas na transacao
             Transaction::rollback();

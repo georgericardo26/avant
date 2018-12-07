@@ -195,34 +195,28 @@ class filterControllerRequest
             return false;
         }
 
-        if(count($parameters["uri"]) === 1) {
+       if(count($parameters["uri"]) === 2){
 
-            $indices = array();
+            //verifica se existe as chaves mencionadas
+            if(array_key_exists("acao", $parameters["uri"]) && array_key_exists("customer", $parameters["uri"])){
 
-            if(array_key_exists("acao", $parameters["uri"]) && !is_null($parameters["uri"]["acao"]) && !empty($parameters["uri"]["acao"]) ){
+                //verifica se os valores estao preenchidos
+                if( (!is_null($parameters["uri"]["acao"])  && !empty($parameters["uri"]["acao"])) && (!is_null($parameters["uri"]["customer"]) && !empty($parameters["uri"]["customer"])) ){
 
 
-                if(array_key_exists("body", $parameters) && !empty($parameters["body"])){
+                    $this->{$valor} = $parameters["uri"]["customer"];
 
-                    if(array_key_exists("delete", $parameters["body"])){
 
-                        if(isset($parameters["body"]->delete->id)){
+                    if(filter_var($this->{$valor}, FILTER_SANITIZE_NUMBER_INT)){
 
-                            //pega id
-                            return $parameters["body"]->delete->id;
-
-                        }
-
-                        return false;
-
+                        //consulta tudo da tabela clientes
+                        return array("id" =>  intval($this->{$valor}));
                     }
 
+                    return false;
                 }
 
-                return false;
-
             }
-
         }
 
         else {

@@ -71,8 +71,10 @@ class indexControllerRequest
                $result = $this->put($parameters);
 
                if($result){
+                   header('Content-Type: application/json');
                     //verifica se a resposta vem como array
                     if(is_array($result)){
+
 
                         $callback(json_encode(array("message: " => "informacoes alteradas com sucesso")));
 
@@ -193,7 +195,6 @@ class indexControllerRequest
                return $this->db->inserir($result);
            }
            else  {
-
                //retorna erro
                errosHttp::erros(503);
                return false;
@@ -234,14 +235,11 @@ class indexControllerRequest
 
    private function delete($parameters){
 
-
-       $result = $this->{$filter}->checkFilterDelete($parameters);
-
-       //verifica se trouxe id
+        $result = $this->{$filter}->checkFilterDelete($parameters);
+        //verifica se trouxe id
        if($result) {
-
            //envia o body request para enviar no banco
-               return $this->db->deletar($result);
+              return $this->db->deletar($result["id"]);
        }
 
        //retorna erro
