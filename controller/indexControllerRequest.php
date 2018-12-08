@@ -61,7 +61,7 @@ class indexControllerRequest
 
                     //errosHttp::erros(503);
                     http_response_code(503);
-                    $callback(json_encode(array("message" => "nao foi possivel inserir esta informacao")));
+                    $callback(array("message" => "nao foi possivel inserir esta informacao"));
                 }
 
                 break;
@@ -76,7 +76,7 @@ class indexControllerRequest
                     if(is_array($result)){
 
 
-                        $callback(json_encode(array("message: " => "informacoes alteradas com sucesso")));
+                        $callback(array("message: " => "informacoes alteradas com sucesso"));
 
                     }
                     //se nao manda a resposta do mesmo jeito
@@ -89,7 +89,7 @@ class indexControllerRequest
                 else {
                     //errosHttp::erros(503);
                     http_response_code(503);
-                    $callback(json_encode(array("message" => "nao foi possivel inserir esta informacao")));
+                    $callback(array("message" => "nao foi possivel inserir esta informacao"));
                 }
 
                 break;
@@ -100,12 +100,12 @@ class indexControllerRequest
 
                 if($result){
 
-                    $callback(json_encode(array("message: " => "cliente atualizado com sucesso")));
+                    $callback(array("message: " => "cliente atualizado com sucesso"));
                 }
                 else {
                     //errosHttp::erros(503);
                     http_response_code(503);
-                    $callback(json_encode(array("message" => "nao foi possivel atualizar esta informacao")));
+                    $callback(array("message" => "nao foi possivel atualizar esta informacao"));
                 }
 
 
@@ -117,12 +117,12 @@ class indexControllerRequest
 
                 if($result){
 
-                        $callback(json_encode(array("message: " => "cliente deletado com sucesso")));
+                        $callback(array("message: " => "cliente deletado com sucesso"));
                 }
                 else {
                     //errosHttp::erros(503);
                     http_response_code(503);
-                    $callback(json_encode(array("message" => "nao foi possivel deletar esta informacao")));
+                    $callback(array("message" => "nao foi possivel deletar esta informacao"));
                 }
 
                 break;
