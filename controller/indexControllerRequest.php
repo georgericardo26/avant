@@ -47,12 +47,12 @@ class indexControllerRequest
                     //verifica se a resposta vem como array
                     if(is_array($result)){
 
-                        $callback(json_encode($result));
+                        $callback($result);
 
                     }
                     //se nao manda a resposta do mesmo jeito
                     else {
-                        $callback(json_encode($result));
+                        $callback($result);
 
                     }
 
@@ -81,7 +81,7 @@ class indexControllerRequest
                     }
                     //se nao manda a resposta do mesmo jeito
                     else {
-                        $callback(json_encode(array("message: " => "informacoes alteradas com sucesso")));
+                        $callback(array("message: " => "informacoes alteradas com sucesso"));
 
                     }
 
