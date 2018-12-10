@@ -132,10 +132,10 @@ class ClientesDAO extends DAO {
             if (!$resultado) {
                 return false;
             } else {
-                return json_encode(array(
+                return array(
                     "status" => "sucess",
-                    "message" => "dados inseridos com sucesso do id: ".$lastInsertId
-                ));
+                    "message" => "dados inseridos com sucesso"
+                );
             }
         } catch (Exception $e) {
             echo $e -> getMessage();
