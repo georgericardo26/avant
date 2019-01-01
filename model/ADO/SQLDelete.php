@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Classe para manipulação de uma instrução de DELETE no banco de dados
  */

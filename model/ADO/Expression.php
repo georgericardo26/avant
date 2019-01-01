@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Classe para gerencia de expressões
  */

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Classe para prove todos os metodos em comum entre todas as instruções SQL(Insert, Update, Delete, Select)
  */
@@ -39,7 +38,6 @@ abstract class SQLInstruction
     public function setCriteria($criteria)
     {
         $this->criteria = $criteria;
-
     }
 
     /*

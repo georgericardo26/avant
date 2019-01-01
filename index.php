@@ -11,10 +11,8 @@ include_once('controller/indexControllerRequest.php');
 include_once('model/DbDAO.php');
 include_once('controller/errosHttp.php');
 include_once('model/erros.php');
-
 //insira o seu server http
 define("server", "{$_SERVER['HTTP_HOST']}");
-
 //define a quantidade de clientes por pagina em caso de paginacao
 define('paginator', 5);
 
@@ -39,7 +37,6 @@ class Application
         $router->checkBody();
         $this->saida = errosHttp\errosHttp::outputError($errosModel);
         if (!empty($this->saida["errors"])) {
-
             echo json_encode($this->saida[1]);
             http_response_code($this->saida[0]);
         } else {

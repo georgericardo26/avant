@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Classe para gerenciamento de conexão com banco de dados
  */

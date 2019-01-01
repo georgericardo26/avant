@@ -27,7 +27,6 @@ class Request implements IRequest
     {
         foreach ($_SERVER as $key => $value) {
             $this->{$this->toCamelCase($key)} = $value;
-
         }
         //ok aqui
     }
@@ -35,14 +34,12 @@ class Request implements IRequest
     //metodo para transformar string em CameCase
     function toCamelCase($string)
     {
-
         $result = strtolower($string);
         preg_match_all('/_[a-z]/', $result, $saida);
         foreach ($saida[0] as $match) {
             $c = str_replace('_', '', strtoupper($match));
             $result = str_replace($match, $c, $result);
         }
-
         return $result;
     }
 
@@ -65,15 +62,12 @@ class Request implements IRequest
         if ($requestMetodo == 'POST' || $requestMetodo == 'PUT' || $requestMetodo == 'PATCH') {
             //obtem os dados inseridos
             $result = json_decode(file_get_contents("php://input"));
-            if(empty($result)){
+            if (empty($result)) {
                 return "";
-            }
-            else {
+            } else {
                 return $result;
             }
-
-        }
-        else {
+        } else {
             return "error";
         }
     }

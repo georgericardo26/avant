@@ -66,8 +66,6 @@ class SQLSelect extends SQLInstruction
     {
         //Prepara o banco de dados para receber a instrução sql e recebe o objeto PDOStatement
         $pstm = $conn->prepare($this->getInstruction());
-
-
         //Chamando o metodo que passara os valores para o $pstm
         $this->whereBindValue($pstm);
         //obtem as propriedades do criteria
@@ -82,7 +80,6 @@ class SQLSelect extends SQLInstruction
                 //substitui o valor de acordo com o indice
                 $pstm->bindValue(":offset", intval($offset), PDO::PARAM_INT);
             }
-
         }
         //$extraBindValue, caso nao der para adicionar pelo criteria
         if (is_array($extraBindValue) && empty($extraBindValue) === false) {
@@ -91,12 +88,10 @@ class SQLSelect extends SQLInstruction
                 $pstm->bindValue("{$key}", $value);
             }
         }
-
         //Executa a instrução que foi preparada
         $pstm->execute();
         //Definindo o modo padrão de busca, para retorna um array indexado pela posição
         //pelo nome da coluna
-
         return $pstm->fetchAll(PDO::FETCH_ASSOC);
     }
 }

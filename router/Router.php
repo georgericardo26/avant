@@ -7,7 +7,9 @@
  */
 
 namespace Router;
-include ('../controller/errosHttp.php');
+
+include('../controller/errosHttp.php');
+
 use controller\errosHttp\errosHttp;
 use IRequest\IRequest;
 
@@ -42,10 +44,9 @@ class Router
             $this->metodoInvalido();
         }
         //seta headers da page
-           $this->setMetodoHeader($this->metodo);
-          //insere informacao no array que sera enviado para controller
-         $this->uri["metodo"] = $this->metodo;
-
+        $this->setMetodoHeader($this->metodo);
+        //insere informacao no array que sera enviado para controller
+        $this->uri["metodo"] = $this->metodo;
     }
 
     //seta os headers do request
@@ -75,61 +76,46 @@ class Router
     //verifica a integridade da url passada e gera o array
     function checkUri()
     {
-
         if ($this->request->checkUrlValidate($this->request->httpHost, $this->request->requestUri)) {
             $this->uri["uri"] = $this->formatarRota($this->request->redirectUrl);
-
             if (!$this->uri["uri"]) {
                 $this->uriInvalida();
-
-            }
-            else {
+            } else {
                 //pega a url e consulta a propriedade query para saber se existe parametro page
                 $url = parse_url("http://" . $this->request->httpHost . $this->request->requestUri);
                 //verifica se existe query parametros e joga no array
                 parse_str($url["query"], $this->uri["query"]);
             }
-
         } else {
-            errosHttp\errosHttp::setaErro($this->errosModelObject,"400", "invalid URL");
+            errosHttp\errosHttp::setaErro($this->errosModelObject, "400", "invalid URL");
             $GLOBALS["error"] = true;
-
         }
-
     }
 
     //verifica se tem body
     public function checkBody()
     {
         $resultGetBody = '';
-        if($this->request->requestMethod == 'POST' || $this->request->requestMethod == 'PUT' || $this->request->requestMethod == 'PATCH'){
+        if ($this->request->requestMethod == 'POST' || $this->request->requestMethod == 'PUT' || $this->request->requestMethod == 'PATCH') {
             $resultGetBody = $this->request->getBody();
-
-            if($resultGetBody === "error"){
-                errosHttp\errosHttp::setaErro($this->errosModelObject,"405", "This method not accept body");
+            if ($resultGetBody === "error") {
+                errosHttp\errosHttp::setaErro($this->errosModelObject, "405", "This method not accept body");
                 $GLOBALS["error"] = true;
-
-            }
-            else {
+            } else {
                 if (empty($resultGetBody)) {
                     errosHttp\errosHttp::setaErro($this->errosModelObject, "422", "request body is missing");
                     $GLOBALS["error"] = true;
-                }
-                else {
+                } else {
                     $this->uri["body"] = $resultGetBody;
                 }
-
             }
-
-
         }
-
     }
 
     //seta headers
     private function setHeaders($metodo)
     {
-         header("Access-Control-Allow-Origin: *");
+        header("Access-Control-Allow-Origin: *");
         header('Content-Type: application/json');
         if ($metodo === "GET") {
             header("Access-Control-Allow-Headers: access");
@@ -146,38 +132,36 @@ class Router
 
     private function formatarRota($route)
     {
-
-
         //remove as barras a direita
         $result = rtrim($route, "/");
         $result = ltrim($result, "/");
         if ($result == '') {
             return false;
         }
-
         return explode("/", $result);
     }
 
     private function metodoInvalido()
     {
         header('Content-Type: application/json');
-        errosHttp\errosHttp::setaErro($this->errosModelObject, "405", "{$this->request->serverProtocol} - Metodo Not Allowed");
-      $GLOBALS["error"] = true;
+        errosHttp\errosHttp::setaErro($this->errosModelObject, "405",
+            "{$this->request->serverProtocol} - Metodo Not Allowed");
+        $GLOBALS["error"] = true;
     }
 
     private function requestDefault()
     {
         header('Content-Type: application/json');
         $GLOBALS["error"] = true;
-        errosHttp\errosHttp::setaErro($this->errosModelObject, "400","{$this->request->serverProtocol} The parameters wrong");
+        errosHttp\errosHttp::setaErro($this->errosModelObject, "400",
+            "{$this->request->serverProtocol} The parameters wrong");
     }
 
     private function uriInvalida()
     {
         header('Content-Type: application/json');
         $GLOBALS["error"] = true;
-        errosHttp\errosHttp::setaErro($this->errosModelObject, "406","Not Acceptable Resource");
-
+        errosHttp\errosHttp::setaErro($this->errosModelObject, "406", "Not Acceptable Resource");
     }
 
     //destroi o objeto

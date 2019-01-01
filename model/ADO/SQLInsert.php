@@ -41,15 +41,6 @@ class SQLInsert extends SQLInstruction
         }
         $countStr = strlen($this->sql);
         $this->sql = substr($this->sql, 0, $countStr - 1);
-        /* $this -> sql = "INSERT INTO {$this->getEntity()} (";
-         //monta uma string contendo os nomes das colunas
-         $columns = implode(', ', array_keys($this -> columns));
-         //monta uma string contendo os nomes das colunas com dois pontos na frente
-         //esses nomes servirão como identificadores
-         //depois serão substituidos pelos respectivos valores
-         $values = implode(', :', array_keys($this -> columns));
-         $this -> sql .= $columns . ') ';
-         $this -> sql .= "VALUES (:{$values})";*/
         return $this->sql;
     }
 
@@ -61,10 +52,6 @@ class SQLInsert extends SQLInstruction
     {
         //Prepara o banco de dados para receber a instrução sql e recebe o objeto PDOStatement
         $pstm = $conn->prepare($this->getInstruction());
-        //Vincula um valor correspondente a um nome que foi reservado na instrução SQL que foi usado para preparar a declaração
-        /* foreach ($this -> columns as $key => $value) {
-             $pstm -> bindValue(":{$key}", $value);
-         }*/
         //Executa a instrução que foi preparada
         return $pstm->execute();
     }

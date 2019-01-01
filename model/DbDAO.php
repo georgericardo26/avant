@@ -116,19 +116,16 @@ class ClientesDAO extends DAO
             function walk_recursive(array $array, int $pos = 0)
             {
                 foreach ($array as $k => $v) {
-
                     if (is_array($v)) {
-                        $array[$k]["link"] = "http://".server."/api/customers/" . $array[$k]["id"];
+                        $array[$k]["link"] = "http://" . server . "/api/customers/" . $array[$k]["id"];
                     }
-
                 }
                 return $array;
             }
 
             $arr['meta'] = $resultado['meta'];
             $arr["links"] = $resultado["links"];
-           $arrWalk = walk_recursive($resultado['result']);
-
+            $arrWalk = walk_recursive($resultado['result']);
             $arr['result'] = walk_recursive($resultado['result']);
             //fecha a transação
             Transaction::close();
@@ -194,7 +191,7 @@ class ClientesDAO extends DAO
                 {
                     foreach ($array as $k => $v) {
                         if (is_array($v)) {
-                            $array[$k]["link"] = "http://".server."/api/customers/" . $array[$k]["id"];
+                            $array[$k]["link"] = "http://" . server . "/api/customers/" . $array[$k]["id"];
                         }
                     }
                     return $array;
@@ -270,7 +267,7 @@ class ClientesDAO extends DAO
                 {
                     foreach ($array as $k => $v) {
                         if (is_array($v)) {
-                            $array[$k]["link"] = "http://".server."/api/customers/" . $array[$k]["id"];
+                            $array[$k]["link"] = "http://" . server . "/api/customers/" . $array[$k]["id"];
                         }
                     }
                     return $array;
@@ -322,7 +319,7 @@ class ClientesDAO extends DAO
             //verifica se tudo ocorreu bem, se sim retorna true, senão false
             if (!$resultado) {
                 return false;
-            }  else {
+            } else {
                 //retorna os objetos criados
                 //reabre a transação
                 //criando array que sera o resultado
@@ -346,7 +343,7 @@ class ClientesDAO extends DAO
                 {
                     foreach ($array as $k => $v) {
                         if (is_array($v)) {
-                            $array[$k]["link"] = "http://".server."/api/customers/" . $array[$k]["id"];
+                            $array[$k]["link"] = "http://" . server . "/api/customers/" . $array[$k]["id"];
                         }
                     }
                     return $array;

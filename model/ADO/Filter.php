@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Classe para definição de filtros de seleção
  */
