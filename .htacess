@@ -1,0 +1,34 @@
+Options -Indexes
+
+<files ~ "^.*\.([Hh][Tt][Aa])">
+order allow,deny
+deny from all
+satisfy all
+</files>
+
+<IfModule mod_rewrite.c>
+
+  Options +FollowSymLinks
+    RewriteEngine On
+
+
+    RewriteBase /
+    #----------------------------------------------------------------------------------------------
+    RewriteCond %{SCRIPT_FILENAME} !-d
+    RewriteCond %{SCRIPT_FILENAME} !-f
+    ##consulta, deleta e atualiza cliente
+   # RewriteRule ^api/customer/(.*$) index.php?acao=customer&customer=$1 [NC,L]
+    #RewriteRule ^api/customers index.php?acao=customer [NC,L]
+
+    RewriteRule ^.* index.php?uri=$0 [QSA]
+     #RewriteRule ^api/customer/(.*$)/(.*$) index.php?acao=customer&customer=$1&metodo=$2 [NC]
+
+    ##consulta todos os clientes com ou sem paginacao
+    #RewriteRule ^api/customers/(.*$) index.php?acao=customers&page=$1 [QSA]
+
+
+
+
+    #----------------------------------------------------------------------------------------------
+
+</IfModule>
