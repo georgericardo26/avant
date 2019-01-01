@@ -1,8 +1,11 @@
 <?php
+
 /*
  * Classe para gerencia de expressões
  */
-abstract class Expression {
+
+abstract class Expression
+{
     //Operadores logicos
     const AND_OPERATOR = "AND";
     const OR_OPERATOR = "OR";

@@ -8,275 +8,519 @@
 
 namespace controller;
 
+include_once('errosHttp.php');
+include_once('checkFilterFunctions.php');
+
+use controller\errosHttp\errosHttp;
 
 class filterControllerRequest
 {
-
     private $var;
     private $int;
+    private $arrayParameters = array();
+    private $errosModelObject;
 
+    public function __construct($errosModel)
+    {
+        $this->errosModelObject = $errosModel;
+    }
 
-    function checkFilterGet($parameters) {
-
-        if(count($parameters["uri"]) === 0){
+    public function checkFilterGet($parameters)
+    {
+        if (empty($parameters["uri"])) {
             // set response code - 400 bad request
-             return false;
-        }
-
-        if(count($parameters["uri"]) === 1){
-
-            if(array_key_exists("acao", $parameters["uri"]) && !is_null($parameters["uri"]["acao"]) && !empty($parameters["uri"]["acao"]) ){
-
-                return 1;
-            }
-
-        }
-        if(count($parameters["uri"]) === 2){
-
-                //verifica se existe as chaves mencionadas
-                if(array_key_exists("acao", $parameters["uri"]) && array_key_exists("customer", $parameters["uri"])){
-
-                    //verifica se os valores estao preenchidos
-                    if( (!is_null($parameters["uri"]["acao"])  && !empty($parameters["uri"]["acao"])) && (!is_null($parameters["uri"]["customer"]) && !empty($parameters["uri"]["customer"])) ){
-
-
-                        $this->{$valor} = $parameters["uri"]["customer"];
-
-
-                        if(filter_var($this->{$valor}, FILTER_SANITIZE_NUMBER_INT)){
-
-                            //consulta tudo da tabela clientes
-                            return array("id" =>  intval($this->{$valor}));
+            $GLOBALS["erros"] = true;
+            errosHttp\errosHttp::setaErro($this->errosModelObject, "400", "URI Request Invalid");
+            return false;
+        } else {
+            //se tiver 2 parametros
+            if (count($parameters["uri"]) === 2) {
+                //verifica se os parametros estao corretos
+                if ($parameters["uri"][0] === "api" && $parameters["uri"][1] === "customers") {
+                    $this->arrayParameters["check"] = true;
+                    //verifica se tem query
+                    if (!empty($parameters["query"])) {
+                        switch (count($parameters["query"])) {
+                            case 1:
+                                $res = array_key_exists("page", $parameters["query"]) || array_key_exists("search",
+                                        $parameters["query"]) || array_key_exists("order", $parameters["query"]);
+                                if ($res) {
+                                    switch (array_keys($parameters["query"])[0]) {
+                                        case "page":
+                                            if (!checkPage($parameters["query"]["page"])) {
+                                                $GLOBALS["erros"] = true;
+                                                errosHttp\errosHttp::setaErro($this->errosModelObject, "422",
+                                                    "Query parameter format invalid, the parameter format for this query is STRING");
+                                                return false;
+                                            }
+                                            break;
+                                        case "search":
+                                            if (!checkSearch($parameters["query"]["search"])) {
+                                                $GLOBALS["erros"] = true;
+                                                errosHttp\errosHttp::setaErro($this->errosModelObject, "422",
+                                                    "Query parameter format invalid, the parameter format for this query is STRING");
+                                                return false;
+                                            }
+                                            break;
+                                        case "order":
+                                            if (filter_var($parameters["query"]["order"], FILTER_SANITIZE_STRING)) {
+                                                if (!checkOrder($parameters["query"]["order"])) {
+                                                    $GLOBALS["erros"] = true;
+                                                    errosHttp\errosHttp::setaErro($this->errosModelObject, "422",
+                                                        "Query parameter format invalid, the parameter informed for this query don't matching with our attributes");
+                                                    return false;
+                                                }
+                                            } else {
+                                                $GLOBALS["erros"] = true;
+                                                errosHttp\errosHttp::setaErro($this->errosModelObject, "422",
+                                                    "Query parameter format invalid, the parameter format for this query is STRING");
+                                                return false;
+                                            }
+                                            break;
+                                    }
+                                    $this->arrayParameters["query"][array_keys($parameters["query"])[0]] = $parameters["query"][array_keys($parameters["query"])[0]];
+                                } else {
+                                    $GLOBALS["erros"] = true;
+                                    errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                        "Query parameters not supported");
+                                    return false;
+                                }
+                                break;
+                            case 2:
+                                $res = (combinateSearchAndOrder($parameters["query"]) || combinateOffsetAndLimit($parameters["query"]));
+                                if ($res) {
+                                    $this->arrayParameters["query"][array_keys($parameters["query"])[0]] = $parameters["query"][array_keys($parameters["query"])[0]];
+                                    $this->arrayParameters["query"][array_keys($parameters["query"])[1]] = $parameters["query"][array_keys($parameters["query"])[1]];
+                                } else {
+                                    $GLOBALS["erros"] = true;
+                                    errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                        "Query parameters not supported or don't sorted");
+                                    return false;
+                                }
+                                break;
+                            case 3:
+                                $res = (combinateSearchAndOffsetAndLimit($parameters["query"])) ||
+                                    (combinateOffsetAndLimitAndOrder($parameters["query"]));
+                                if ($res) {
+                                    $this->arrayParameters["query"][array_keys($parameters["query"])[0]] = $parameters["query"][array_keys($parameters["query"])[0]];
+                                    $this->arrayParameters["query"][array_keys($parameters["query"])[1]] = $parameters["query"][array_keys($parameters["query"])[1]];
+                                    $this->arrayParameters["query"][array_keys($parameters["query"])[2]] = $parameters["query"][array_keys($parameters["query"])[2]];
+                                } else {
+                                    $GLOBALS["erros"] = true;
+                                    errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                        "Query parameters not supported or don't sorted");
+                                    return false;
+                                }
+                                break;
+                            case 4:
+                                $res = (combinateSearchAndOffsetAndLimitAndOrder($parameters["query"]));
+                                if ($res) {
+                                    $this->arrayParameters["query"][array_keys($parameters["query"])[0]] = $parameters["query"][array_keys($parameters["query"])[0]];
+                                    $this->arrayParameters["query"][array_keys($parameters["query"])[1]] = $parameters["query"][array_keys($parameters["query"])[1]];
+                                    $this->arrayParameters["query"][array_keys($parameters["query"])[2]] = $parameters["query"][array_keys($parameters["query"])[2]];
+                                    $this->arrayParameters["query"][array_keys($parameters["query"])[3]] = $parameters["query"][array_keys($parameters["query"])[3]];
+                                } else {
+                                    $GLOBALS["erros"] = true;
+                                    errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                        "Query parameters not supported or don't sorted");
+                                    return false;
+                                }
+                                break;
+                            default:
+                                $GLOBALS["erros"] = true;
+                                errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                    "Query parameters not supported");
+                                return false;
                         }
-                        else{
-
-                            //consulta tudo da tabela clientes
-                            return array("name" =>  $this->{$valor});
-                        }
-
-                    }
-
-                }
-
-                //verifica se existe as chaves mencionadas
-                else if (array_key_exists("acao", $parameters["uri"]) && array_key_exists("page", $parameters["uri"])) {
-
-
-                    if(!is_null($parameters["uri"]["acao"]) && !empty($parameters["uri"]["acao"])){
-
-                        if(!is_null($parameters["uri"]["page"]) && !empty($parameters["uri"]["page"])){
-
-                            //verifica se e int a variavel page
-                            if(filter_var($parameters["uri"]["page"], FILTER_VALIDATE_INT)){
-
-
-                                //consulta tudo da tabela clientes
-                                return array("page" =>  $parameters["uri"]["page"]);
-
-                            }
-
-                            return false;
-
-                        }
-
-                        else {
-
-                            return false;
-                        }
-
-                    }
-
+                        return $this->arrayParameters;
+                    } //se nao tiver retorna somente o ok
                     else {
-
+                        return $this->arrayParameters;
+                    }
+                }
+                $GLOBALS["erros"] = true;
+                errosHttp\errosHttp::setaErro($this->errosModelObject, "406", "URI requested invalid");
+                return false;
+            } //se tiver 3 parametros
+            else {
+                if (count($parameters["uri"]) === 3) {
+                    if (!empty($parameters["query"])) {
+                        $GLOBALS["erros"] = true;
+                        errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                            "When having search by id, you can not insert query parameters");
                         return false;
                     }
-                }
-
-            else {
-                return false;
-            }
-
-
-
-        }
-
-
-    }
-
-    function checkFilterPost($parameters){
-
-        if(count($parameters["uri"]) === 0){
-            // set response code - 400 bad request
-            return false;
-        }
-
-        if(count($parameters["uri"]) === 1){
-
-            $indices = array();
-
-            if(array_key_exists("acao", $parameters["uri"]) && !is_null($parameters["uri"]["acao"]) && !empty($parameters["uri"]["acao"]) ){
-
-
-               if(array_key_exists("body", $parameters) && !empty($parameters["body"])){
-
-                   foreach ($parameters["body"]->create as $key){
-
-                       $array["nome"] = $key->nome;
-                       $array["cpf"] = $key->cpf;
-                       $array["nascimento"] = $key->nascimento;
-
-                       array_push($indices, $array);
-
-                   }
-
-                   return $indices;
-
-               }
-
-               return false;
-
-            }
-
-        }
-
-        else {
-            return false;
-        }
-
-    }
-
-    function checkFilterPut($parameters){
-
-        if(count($parameters["uri"]) === 0){
-            // set response code - 400 bad request
-            return false;
-        }
-
-        if(count($parameters["uri"]) === 1) {
-
-            $indices = array();
-
-            if(array_key_exists("acao", $parameters["uri"]) && !is_null($parameters["uri"]["acao"]) && !empty($parameters["uri"]["acao"]) ){
-
-
-                if(array_key_exists("body", $parameters) && !empty($parameters["body"])){
-
-                    if(array_key_exists("put", $parameters["body"])){
-
-                        //preenche o array
-                            $array["id"] = $parameters["body"]->put->id;
-                            $array["nome"] = $parameters["body"]->put->nome;
-                            $array["cpf"] = $parameters["body"]->put->cpf;
-                            $array["nascimento"] = $parameters["body"]->put->nascimento;
-
-                            array_push($indices, $array);
-
-                         return $indices;
-
+                    //verifica se os parametros estao corretos
+                    if ($parameters["uri"][0] === "api" && $parameters["uri"][1] === "customers") {
+                        //o terceiro parametro precisa ser inteiro
+                        if (!filter_var($parameters["uri"][2], FILTER_SANITIZE_NUMBER_INT)) {
+                            $GLOBALS["erros"] = true;
+                            errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                "The parameter ID must be INT format");
+                            return false;
+                        }
+                        $this->arrayParameters["check"] = true;
+                        $this->arrayParameters["id"] = $parameters["uri"][2];
+                        return $this->arrayParameters;
                     }
-
-                }
-
-                return false;
-
-            }
-
-        }
-
-        else {
-            return false;
-        }
-    }
-
-    function checkFilterDelete($parameters){
-
-        if(count($parameters["uri"]) === 0){
-            // set response code - 400 bad request
-            return false;
-        }
-
-       if(count($parameters["uri"]) === 2){
-
-            //verifica se existe as chaves mencionadas
-            if(array_key_exists("acao", $parameters["uri"]) && array_key_exists("customer", $parameters["uri"])){
-
-                //verifica se os valores estao preenchidos
-                if( (!is_null($parameters["uri"]["acao"])  && !empty($parameters["uri"]["acao"])) && (!is_null($parameters["uri"]["customer"]) && !empty($parameters["uri"]["customer"])) ){
-
-
-                    $this->{$valor} = $parameters["uri"]["customer"];
-
-
-                    if(filter_var($this->{$valor}, FILTER_SANITIZE_NUMBER_INT)){
-
-                        //consulta tudo da tabela clientes
-                        return array("id" =>  intval($this->{$valor}));
-                    }
-
+                    $GLOBALS["erros"] = true;
+                    errosHttp\errosHttp::setaErro($this->errosModelObject, "406", "URI requested invalid");
                     return false;
                 }
-
             }
-        }
-
-        else {
             return false;
         }
-
     }
 
-    function checkFilterPatch($parameters){
-
-        if(count($parameters["uri"]) === 0){
+    public function checkFilterPost($parameters)
+    {
+        if (empty($parameters["uri"])) {
             // set response code - 400 bad request
-            return false;
-        }
-
-        if(count($parameters["uri"]) === 1) {
-
-            $indices = array();
-
-            if(array_key_exists("acao", $parameters["uri"]) && !is_null($parameters["uri"]["acao"]) && !empty($parameters["uri"]["acao"]) ){
-
-
-                if(array_key_exists("body", $parameters) && !empty($parameters["body"])){
-
-                    if(array_key_exists("patch", $parameters["body"])){
-
-                        if(isset($parameters["body"]->patch->id)) {
-
-                            //preenche o array
-                            $array["id"] = $parameters["body"]->patch->id;
-                            $array["nome"] = isset($parameters["body"]->patch->nome) ? $parameters["body"]->patch->nome : "";
-                            $array["cpf"] = isset($parameters["body"]->patch->cpf) ? $parameters["body"]->patch->cpf : "";
-                            $array["nascimento"] = isset($parameters["body"]->patch->nascimento) ? $parameters["body"]->patch->nascimento : "";
-
-                            $indices[$array["id"]];
-
-                            foreach ($array as $key => $value){
-
-                                $indices[$key] = $value;
-                            }
-
-                            return $indices;
+            $GLOBALS["erros"] = true;
+            errosHttp\errosHttp::setaErro($this->errosModelObject, "400", "URI Request Invalid");
+        } else {
+            if (count($parameters["uri"]) === 2) {
+                if ($parameters["uri"][0] === "api" && $parameters["uri"][1] === "customers") {
+                    $this->arrayParameters["check"] = true;
+                    if (key_exists("create", $parameters["body"])) {
+                        $parameters["body"] = (array)$parameters["body"];
+                        $parameters["body"]["create"] = (array)$parameters["body"]["create"];
+                        $array = array();
+                        $arrayParameters = array();
+                        foreach ($parameters["body"]["create"] as $key => $val) {
+                            $keyArr = (array)$val;
+                            //verifica se as propriedades estao corretas
+                            filterCheckName(array_keys($keyArr)[0], $this->errosModelObject);
+                            filterCheckCpf(array_keys($keyArr)[1], $this->errosModelObject);
+                            filterCheckNascimento(array_keys($keyArr)[2], $this->errosModelObject);
+                            //verifica se e string
+                            filterCheckValueName(array_values($keyArr)[0], $this->errosModelObject);
+                            filterCheckValueCpf(array_values($keyArr)[1], $this->errosModelObject);
+                            filterCheckValueNascimento(array_values($keyArr)[2], $this->errosModelObject);
+                            $this->arrayParameters["body"][] = $keyArr;
                         }
-
-                        return false;
-
+                    } else {
+                        $keyArr = (array)$parameters["body"];
+                        //verifica se as propriedades estao corretas
+                        filterCheckName(array_keys($keyArr)[0], $this->errosModelObject);
+                        filterCheckCpf(array_keys($keyArr)[1], $this->errosModelObject);
+                        filterCheckNascimento(array_keys($keyArr)[2], $this->errosModelObject);
+                        //verifica se e string
+                        filterCheckValueName(array_values($keyArr)[0], $this->errosModelObject);
+                        filterCheckValueCpf(array_values($keyArr)[1], $this->errosModelObject);
+                        filterCheckValueNascimento(array_values($keyArr)[2], $this->errosModelObject);
+                        $this->arrayParameters["body"][] = $keyArr;
                     }
-
+                    return $this->arrayParameters["body"];
+                } else {
+                    $GLOBALS["erros"] = true;
+                    errosHttp\errosHttp::setaErro($this->errosModelObject, "406", "Not Acceptable Resource");
                 }
-
-                return false;
-
             }
-
-        }
-
-        else {
-            return false;
         }
     }
 
+    public function checkFilterPut($parameters)
+    {
+        if (empty($parameters["uri"])) {
+            // set response code - 400 bad request
+            $GLOBALS["erros"] = true;
+            errosHttp\errosHttp::setaErro($this->errosModelObject, "400", "URI Request Invalid");
+        } else {
+            if (count($parameters["uri"]) === 3) {
+                if ($parameters["uri"][0] === "api" && $parameters["uri"][1] === "customers") {
+                    if (!filter_var($parameters["uri"][2], FILTER_SANITIZE_NUMBER_INT)) {
+                        $GLOBALS["erros"] = true;
+                        errosHttp\errosHttp::setaErro($this->errosModelObject, "400", "URI Request Invalid");
+                    } else {
+                        $this->arrayParameters["id"] = $parameters["uri"][2];
+                        $err = errosHttp\errosHttp::outputError($this->errosModelObject);
+                        if (empty($err[1]["errors"])) {
+                            $this->arrayParameters["check"] = true;
+                            $keyArr = (array)$parameters["body"];
+                            if (count($keyArr) === 3) {
+                                //verifica se as propriedades estao corretas
+                                filterCheckName(array_keys($keyArr)[0], $this->errosModelObject);
+                                filterCheckCpf(array_keys($keyArr)[1], $this->errosModelObject);
+                                filterCheckNascimento(array_keys($keyArr)[2], $this->errosModelObject);
+                                //verifica se e string
+                                filterCheckValueName(array_values($keyArr)[0], $this->errosModelObject);
+                                filterCheckValueCpf(array_values($keyArr)[1], $this->errosModelObject);
+                                filterCheckValueNascimento(array_values($keyArr)[2], $this->errosModelObject);
+                                $this->arrayParameters["body"] = $keyArr;
+                            } else {
+                                $GLOBALS["erros"] = true;
+                                errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                    "The amount properties content a number higher to 3");
+                            }
+                            return $this->arrayParameters;
+                        }
+                    }
+                } else {
+                    $GLOBALS["erros"] = true;
+                    errosHttp\errosHttp::setaErro($this->errosModelObject, "406", "Not Acceptable Resource");
+                }
+            } else {
+                $GLOBALS["erros"] = true;
+                errosHttp\errosHttp::setaErro($this->errosModelObject, "406", "Not Acceptable Resource");
+            }
+        }
+    }
+
+    public function checkFilterDelete($parameters)
+    {
+        if (empty($parameters["uri"])) {
+            // set response code - 400 bad request
+            $GLOBALS["erros"] = true;
+            errosHttp\errosHttp::setaErro($this->errosModelObject, "400", "URI Request Invalid");
+        } else {
+            //verifica parametros da uri
+            if (count($parameters["uri"]) === 3) {
+                //verifica parametros da uri
+                if ($parameters["uri"][0] === "api" && $parameters["uri"][1] === "customers") {
+                    if (!filter_var($parameters["uri"][2], FILTER_SANITIZE_NUMBER_INT)) {
+                        $GLOBALS["erros"] = true;
+                        errosHttp\errosHttp::setaErro($this->errosModelObject, "400", "URI Request Invalid");
+                    } else {
+                        $this->arrayParameters["id"] = $parameters["uri"][2];
+                        $err = errosHttp\errosHttp::outputError($this->errosModelObject);
+                        if (empty($err[1]["errors"])) {
+                            $this->arrayParameters["check"] = true;
+                            return $this->arrayParameters;
+                        }
+                    }
+                } else {
+                    $GLOBALS["erros"] = true;
+                    errosHttp\errosHttp::setaErro($this->errosModelObject, "406", "Not Acceptable Resource");
+                }
+            } else {
+                $GLOBALS["erros"] = true;
+                errosHttp\errosHttp::setaErro($this->errosModelObject, "406", "Not Acceptable Resource");
+            }
+        }
+    }
+
+    public function checkFilterPatch($parameters)
+    {
+        if (empty($parameters["uri"])) {
+            // set response code - 400 bad request
+            $GLOBALS["erros"] = true;
+            errosHttp\errosHttp::setaErro($this->errosModelObject, "400", "URI Request Invalid");
+        } else {
+            if (count($parameters["uri"]) === 3) {
+                if ($parameters["uri"][0] === "api" && $parameters["uri"][1] === "customers") {
+                    if (!filter_var($parameters["uri"][2], FILTER_SANITIZE_NUMBER_INT)) {
+                        $GLOBALS["erros"] = true;
+                        errosHttp\errosHttp::setaErro($this->errosModelObject, "400", "URI Request Invalid");
+                    } else {
+                        $this->arrayParameters["id"] = $parameters["uri"][2];
+                        $err = errosHttp\errosHttp::outputError($this->errosModelObject);
+                        if (empty($err[1]["errors"])) {
+                            $this->arrayParameters["check"] = true;
+                            $keyArr = (array)$parameters["body"];
+                            if (count($keyArr) > 3) {
+                                $GLOBALS["erros"] = true;
+                                errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                    "The amount properties content a number higher to 3");
+                            } else {
+                                switch (count($keyArr)) {
+                                    case 1:
+                                        switch (array_keys($keyArr)[0]) {
+                                            case "id":
+                                                $GLOBALS["erros"] = true;
+                                                errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                                    "Don't allowed using ID property");
+                                                break;
+                                            case "link":
+                                                $GLOBALS["erros"] = true;
+                                                errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                                    "Don't allowed using Link property");
+                                                break;
+                                            case "nome":
+                                                filterCheckName(array_keys($keyArr)[0], $this->errosModelObject);
+                                                filterCheckValueName(array_values($keyArr)[0], $this->errosModelObject);
+                                                break;
+                                            case "cpf":
+                                                filterCheckCpf(array_keys($keyArr)[0], $this->errosModelObject);
+                                                filterCheckValueCpf(array_values($keyArr)[0], $this->errosModelObject);
+                                                break;
+                                            case "nascimento":
+                                                filterCheckNascimento(array_keys($keyArr)[0], $this->errosModelObject);
+                                                filterCheckValueNascimento(array_values($keyArr)[0],
+                                                    $this->errosModelObject);
+                                                break;
+                                            default:
+                                                $GLOBALS["erros"] = true;
+                                                errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                                    "Property not allowed");
+                                        }
+                                        $this->arrayParameters["body"] = $keyArr;
+                                        break;
+                                    case 2:
+                                        switch (array_keys($keyArr)[0]) {
+                                            case "id":
+                                                $GLOBALS["erros"] = true;
+                                                errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                                    "Don't allowed using ID property");
+                                                break;
+                                            case "link":
+                                                $GLOBALS["erros"] = true;
+                                                errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                                    "Don't allowed using Link property");
+                                                break;
+                                            case "nome":
+                                                filterCheckName(array_keys($keyArr)[0], $this->errosModelObject);
+                                                filterCheckValueName(array_values($keyArr)[0], $this->errosModelObject);
+                                                break;
+                                            case "cpf":
+                                                filterCheckCpf(array_keys($keyArr)[0], $this->errosModelObject);
+                                                filterCheckValueCpf(array_values($keyArr)[0], $this->errosModelObject);
+                                                break;
+                                            case "nascimento":
+                                                filterCheckNascimento(array_keys($keyArr)[0], $this->errosModelObject);
+                                                filterCheckValueNascimento(array_values($keyArr)[0],
+                                                    $this->errosModelObject);
+                                                break;
+                                            default:
+                                                $GLOBALS["erros"] = true;
+                                                errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                                    "Property not allowed");
+                                        }
+                                        switch (array_keys($keyArr)[1]) {
+                                            case "id":
+                                                $GLOBALS["erros"] = true;
+                                                errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                                    "Don't allowed using ID property");
+                                                break;
+                                            case "link":
+                                                $GLOBALS["erros"] = true;
+                                                errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                                    "Don't allowed using Link property");
+                                                break;
+                                            case "nome":
+                                                filterCheckName(array_keys($keyArr)[1], $this->errosModelObject);
+                                                filterCheckValueName(array_values($keyArr)[1], $this->errosModelObject);
+                                                break;
+                                            case "cpf":
+                                                filterCheckCpf(array_keys($keyArr)[1], $this->errosModelObject);
+                                                filterCheckValueCpf(array_values($keyArr)[1], $this->errosModelObject);
+                                                break;
+                                            case "nascimento":
+                                                filterCheckNascimento(array_keys($keyArr)[1], $this->errosModelObject);
+                                                filterCheckValueNascimento(array_values($keyArr)[1],
+                                                    $this->errosModelObject);
+                                                break;
+                                            default:
+                                                $GLOBALS["erros"] = true;
+                                                errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                                    "Property not allowed");
+                                        }
+                                        $this->arrayParameters["body"] = $keyArr;
+                                        break;
+                                    case 3:
+                                        switch (array_keys($keyArr)[0]) {
+                                            case "id":
+                                                $GLOBALS["erros"] = true;
+                                                errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                                    "Don't allowed using ID property");
+                                                break;
+                                            case "link":
+                                                $GLOBALS["erros"] = true;
+                                                errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                                    "Don't allowed using Link property");
+                                                break;
+                                            case "nome":
+                                                filterCheckName(array_keys($keyArr)[0], $this->errosModelObject);
+                                                filterCheckValueName(array_values($keyArr)[0], $this->errosModelObject);
+                                                break;
+                                            case "cpf":
+                                                filterCheckCpf(array_keys($keyArr)[0], $this->errosModelObject);
+                                                filterCheckValueCpf(array_values($keyArr)[0], $this->errosModelObject);
+                                                break;
+                                            case "nascimento":
+                                                filterCheckNascimento(array_keys($keyArr)[0], $this->errosModelObject);
+                                                filterCheckValueNascimento(array_values($keyArr)[0],
+                                                    $this->errosModelObject);
+                                                break;
+                                            default:
+                                                $GLOBALS["erros"] = true;
+                                                errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                                    "Property not allowed");
+                                        }
+                                        switch (array_keys($keyArr)[1]) {
+                                            case "id":
+                                                $GLOBALS["erros"] = true;
+                                                errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                                    "Don't allowed using ID property");
+                                                break;
+                                            case "link":
+                                                $GLOBALS["erros"] = true;
+                                                errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                                    "Don't allowed using Link property");
+                                                break;
+                                            case "nome":
+                                                filterCheckName(array_keys($keyArr)[1], $this->errosModelObject);
+                                                filterCheckValueName(array_values($keyArr)[1], $this->errosModelObject);
+                                                break;
+                                            case "cpf":
+                                                filterCheckCpf(array_keys($keyArr)[1], $this->errosModelObject);
+                                                filterCheckValueCpf(array_values($keyArr)[1], $this->errosModelObject);
+                                                break;
+                                            case "nascimento":
+                                                filterCheckNascimento(array_keys($keyArr)[1], $this->errosModelObject);
+                                                filterCheckValueNascimento(array_values($keyArr)[1],
+                                                    $this->errosModelObject);
+                                                break;
+                                            default:
+                                                $GLOBALS["erros"] = true;
+                                                errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                                    "Property not allowed");
+                                        }
+                                        switch (array_keys($keyArr)[2]) {
+                                            case "id":
+                                                $GLOBALS["erros"] = true;
+                                                errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                                    "Don't allowed using ID property");
+                                                break;
+                                            case "link":
+                                                $GLOBALS["erros"] = true;
+                                                errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                                    "Don't allowed using Link property");
+                                                break;
+                                            case "nome":
+                                                filterCheckName(array_keys($keyArr)[2], $this->errosModelObject);
+                                                filterCheckValueName(array_values($keyArr)[2], $this->errosModelObject);
+                                                break;
+                                            case "cpf":
+                                                filterCheckCpf(array_keys($keyArr)[2], $this->errosModelObject);
+                                                filterCheckValueCpf(array_values($keyArr)[2], $this->errosModelObject);
+                                                break;
+                                            case "nascimento":
+                                                filterCheckNascimento(array_keys($keyArr)[2], $this->errosModelObject);
+                                                filterCheckValueNascimento(array_values($keyArr)[2],
+                                                    $this->errosModelObject);
+                                                break;
+                                            default:
+                                                $GLOBALS["erros"] = true;
+                                                errosHttp\errosHttp::setaErro($this->errosModelObject, "406",
+                                                    "Property not allowed");
+                                        }
+                                        $this->arrayParameters["body"] = $keyArr;
+                                        break;
+                                }
+                                return $this->arrayParameters;
+                            }
+                        }
+                    }
+                } else {
+                    $GLOBALS["erros"] = true;
+                    errosHttp\errosHttp::setaErro($this->errosModelObject, "406", "Not Acceptable Resource");
+                }
+            } else {
+                $GLOBALS["erros"] = true;
+                errosHttp\errosHttp::setaErro($this->errosModelObject, "406", "Not Acceptable Resource");
+            }
+        }
+    }
 
 }
