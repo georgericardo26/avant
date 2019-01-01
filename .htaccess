@@ -1,0 +1,25 @@
+Options -Indexes
+
+<files ~ "^.*\.([Hh][Tt][Aa])">
+order allow,deny
+deny from all
+satisfy all
+</files>
+
+<IfModule mod_rewrite.c>
+
+  Options +FollowSymLinks
+    RewriteEngine On
+
+
+    RewriteBase /
+    #----------------------------------------------------------------------------------------------
+    RewriteCond %{SCRIPT_FILENAME} !-d
+    RewriteCond %{SCRIPT_FILENAME} !-f
+  ##consulta, deleta e atualiza cliente
+    RewriteRule ^.* index.php?uri=$0 [QSA]
+
+
+    #----------------------------------------------------------------------------------------------
+
+</IfModule>
